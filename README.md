@@ -1,0 +1,1 @@
+# tailscale-vmware-template
