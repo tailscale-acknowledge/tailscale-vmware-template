@@ -66,8 +66,8 @@ __CUSTOMIZE_PHOTON__
 	# Enable and start tailscaled
 	sudo systemctl enable --now tailscaled
 	echo 'net.ipv4.ip_forward = 1' | tee -a /etc/sysctl.conf
-    echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.conf
-    sysctl -p /etc/sysctl.conf
+	echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.conf
+	sysctl -p /etc/sysctl.conf
 	tailscale up --authkey ${AUTH} --advertise-routes=fd7a:115c:a1e0:b1a:0:${SITEID}::/96
 	
 	
