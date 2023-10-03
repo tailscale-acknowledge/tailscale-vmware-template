@@ -10,16 +10,8 @@ else
     GATEWAY_PROPERTY=$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep "guestinfo.gateway")
     DNS_SERVER_PROPERTY=$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep "guestinfo.dns")
     DNS_DOMAIN_PROPERTY=$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep "guestinfo.domain")
-
-    HOSTNAME=$(echo "${HOSTNAME_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     AUTH=$(echo "${AUTH_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
     SITEID=$(echo "${SITEID_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
-    IP_ADDRESS=$(echo "${IP_ADDRESS_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
-    NETMASK=$(echo "${NETMASK_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
-    GATEWAY=$(echo "${GATEWAY_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
-    DNS_SERVER=$(echo "${DNS_SERVER_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
-    DNS_DOMAIN=$(echo "${DNS_DOMAIN_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
-
     #################
     ### Tailscale ###
     #################
@@ -32,15 +24,46 @@ else
 	sudo apt-get update && sudo apt-get install tailscale
 	# Start Tailscale!
 	echo 'net.ipv4.ip_forward = 1' | tee -a /etc/sysctl.conf
-        echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.conf
-        sysctl -p /etc/sysctl.conf
+	echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.conf
+	sysctl -p /etc/sysctl.conf
 	tailscale up --authkey ${AUTH} --advertise-routes=fd7a:115c:a1e0:b1a:0:${SITEID}::/96
+
+    ##################################
+    ### No User Input, assume DHCP ###
+    ##################################
+    if [ -z "${HOSTNAME_PROPERTY}" ]; then
+        cat > /etc/systemd/network/${NETWORK_CONFIG_FILE} << __CUSTOMIZE_TAILSCALE__
+[Match]
+Name=e*
+
+[Network]
+DHCP=yes
+IPv6AcceptRA=no
+__CUSTOMIZE_TAILSCALE__
+    #########################
+    ### Static IP Address ###
+    #########################
+    else
+        HOSTNAME=$(echo "${HOSTNAME_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+        IP_ADDRESS=$(echo "${IP_ADDRESS_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+        NETMASK=$(echo "${NETMASK_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+        GATEWAY=$(echo "${GATEWAY_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+        DNS_SERVER=$(echo "${DNS_SERVER_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+        DNS_DOMAIN=$(echo "${DNS_DOMAIN_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+
+        cat > /etc/systemd/network/${NETWORK_CONFIG_FILE} << __CUSTOMIZE_TAILSCALE__
+[Match]
+Name=e*
+
+[Network]
+Address=${IP_ADDRESS}/${NETMASK}
+Gateway=${GATEWAY}
+DNS=${DNS_SERVER}
+Domain=${DNS_DOMAIN}
+__CUSTOMIZE_TAILSCALE__
 
     hostnamectl set-hostname ${HOSTNAME}
     systemctl restart systemd-networkd
 	touch /root/ran_customization
     fi
 fi
-
-
-
