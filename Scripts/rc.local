@@ -1,8 +1,3 @@
-#!/bin/bash -x
-# William Lam
-# www.virtuallyghetto.com
-# Sample Network Customization script for VMware PhotonOS
-
 if [ -e /root/ran_customization ]; then
     exit
 else
@@ -20,14 +15,14 @@ else
     ### No User Input, assume DHCP ###
     ##################################
     if [ -z "${HOSTNAME_PROPERTY}" ]; then
-        cat > /etc/systemd/network/${NETWORK_CONFIG_FILE} << __CUSTOMIZE_PHOTON__
+        cat > /etc/systemd/network/${NETWORK_CONFIG_FILE} << __CUSTOMIZE_TAILSCALE__
 [Match]
 Name=e*
 
 [Network]
 DHCP=yes
 IPv6AcceptRA=no
-__CUSTOMIZE_PHOTON__
+__CUSTOMIZE_TAILSCALE__
     #########################
     ### Static IP Address ###
     #########################
@@ -41,7 +36,7 @@ __CUSTOMIZE_PHOTON__
         DNS_SERVER=$(echo "${DNS_SERVER_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
         DNS_DOMAIN=$(echo "${DNS_DOMAIN_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
 
-        cat > /etc/systemd/network/${NETWORK_CONFIG_FILE} << __CUSTOMIZE_PHOTON__
+        cat > /etc/systemd/network/${NETWORK_CONFIG_FILE} << __CUSTOMIZE_TAILSCALE__
 [Match]
 Name=e*
 
@@ -50,7 +45,7 @@ Address=${IP_ADDRESS}/${NETMASK}
 Gateway=${GATEWAY}
 DNS=${DNS_SERVER}
 Domain=${DNS_DOMAIN}
-__CUSTOMIZE_PHOTON__
+__CUSTOMIZE_TAILSCALE__
 
     hostnamectl set-hostname ${HOSTNAME}
     systemctl restart systemd-networkd
