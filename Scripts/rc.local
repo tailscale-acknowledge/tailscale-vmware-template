@@ -61,7 +61,6 @@ Gateway=${GATEWAY}
 DNS=${DNS_SERVER}
 Domain=${DNS_DOMAIN}
 __CUSTOMIZE_TAILSCALE__
-
     hostnamectl set-hostname ${HOSTNAME}
     systemctl restart systemd-networkd
 	touch /root/ran_customization
