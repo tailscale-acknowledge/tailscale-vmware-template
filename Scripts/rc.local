@@ -11,6 +11,15 @@ else
     DNS_SERVER_PROPERTY=$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep "guestinfo.dns")
     DNS_DOMAIN_PROPERTY=$(vmtoolsd --cmd "info-get guestinfo.ovfEnv" | grep "guestinfo.domain")
 
+    HOSTNAME=$(echo "${HOSTNAME_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+    AUTH=$(echo "${AUTH_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+    SITEID=$(echo "${SITEID_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+    IP_ADDRESS=$(echo "${IP_ADDRESS_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+    NETMASK=$(echo "${NETMASK_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+    GATEWAY=$(echo "${GATEWAY_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+    DNS_SERVER=$(echo "${DNS_SERVER_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+    DNS_DOMAIN=$(echo "${DNS_DOMAIN_PROPERTY}" | awk -F 'oe:value="' '{print $2}' | awk -F '"' '{print $1}')
+
     #################
     ### Tailscale ###
     #################
@@ -23,12 +32,15 @@ else
 	sudo apt-get update && sudo apt-get install tailscale
 	# Start Tailscale!
 	echo 'net.ipv4.ip_forward = 1' | tee -a /etc/sysctl.conf
-    echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.conf
-    sysctl -p /etc/sysctl.conf
-	tailscale up --authkey ${AUTH_PROPERTY} --advertise-routes=fd7a:115c:a1e0:b1a:0:${SITEID_PROPERTY}::/96
+        echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.conf
+        sysctl -p /etc/sysctl.conf
+	tailscale up --authkey ${AUTH} --advertise-routes=fd7a:115c:a1e0:b1a:0:${SITEID}::/96
 
-    hostnamectl set-hostname ${HOSTNAME_PROPERTY}
+    hostnamectl set-hostname ${HOSTNAME}
     systemctl restart systemd-networkd
 	touch /root/ran_customization
     fi
 fi
+
+
+
