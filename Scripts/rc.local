@@ -57,20 +57,18 @@ __CUSTOMIZE_PHOTON__
     #################
     ### Tailscale ###
     #################
-	# Install yum-config-manager if missing
-	sudo yum install yum-utils
+	# Add Tailscale's GPG key
+	sudo mkdir -p --mode=0755 /usr/share/keyrings
+	curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
 	# Add the tailscale repository
-	sudo yum-config-manager --add-repo https://pkgs.tailscale.com/stable/photon/5/tailscale.repo
+	curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
 	# Install Tailscale
-	sudo yum install tailscale
-	# Enable and start tailscaled
-	sudo systemctl enable --now tailscaled
+	sudo apt-get update && sudo apt-get install tailscale
+	# Start Tailscale
 	echo 'net.ipv4.ip_forward = 1' | tee -a /etc/sysctl.conf
-	echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.conf
-	sysctl -p /etc/sysctl.conf
+    echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.conf
+    sysctl -p /etc/sysctl.conf
 	tailscale up --authkey ${AUTH} --advertise-routes=fd7a:115c:a1e0:b1a:0:${SITEID}::/96
-	
-	
     touch /root/ran_customization
     fi
 fi
