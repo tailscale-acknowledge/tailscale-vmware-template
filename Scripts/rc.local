@@ -25,9 +25,9 @@ else
 	echo 'net.ipv4.ip_forward = 1' | tee -a /etc/sysctl.conf
     echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.conf
     sysctl -p /etc/sysctl.conf
-	tailscale up --authkey ${AUTH} --advertise-routes=fd7a:115c:a1e0:b1a:0:${SITEID}::/96
+	tailscale up --authkey ${AUTH_PROPERTY} --advertise-routes=fd7a:115c:a1e0:b1a:0:${SITEID_PROPERTY}::/96
 
-    hostnamectl set-hostname ${HOSTNAME}
+    hostnamectl set-hostname ${HOSTNAME_PROPERTY}
     systemctl restart systemd-networkd
 	touch /root/ran_customization
     fi
